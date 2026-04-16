@@ -21,6 +21,7 @@
     th { background:#eee; }
   </style>
 </head>
+
 <body>
 
 <div class="box">
@@ -64,7 +65,7 @@
   </table>
 
 
-  <h3>Von Polfood verladenes Leergut</h3>
+  <h3>Leergut</h3>
 
   <label>E2</label>
   <input type="number" id="e2">
@@ -94,113 +95,91 @@
       </tr>
     </thead>
     <tbody id="emptyTable"></tbody>
-    <tfoot>
-      <tr>
-        <th id="sumE2">0</th>
-        <th id="sumH1">0</th>
-        <th id="sumEpal">0</th>
-        <th></th>
-        <th></th>
-      </tr>
-    </tfoot>
   </table>
 
   <button onclick="exportExcel()">📦 Excel Export</button>
 </div>
 
 <script>
+
 let deliveries = JSON.parse(localStorage.getItem("deliveries") || "[]");
 let empties = JSON.parse(localStorage.getItem("empties") || "[]");
-
-render();
 
 function save(){
   localStorage.setItem("deliveries", JSON.stringify(deliveries));
   localStorage.setItem("empties", JSON.stringify(empties));
+  render();
 }
 
 function addDelivery(){
   deliveries.push({
-    nr: document.getElementById('nr').value,
-    anlieferer: document.getElementById('anlieferer').value,
-    kennzeichen: document.getElementById('kennzeichen').value,
-    fahrer: document.getElementById('fahrer').value,
-    lkw: document.getElementById('lkw').value
+    nr: nr.value,
+    anlieferer: anlieferer.value,
+    kennzeichen: kennzeichen.value,
+    fahrer: fahrer.value,
+    lkw: lkw.value
   });
   save();
-  render();
 }
 
 function addEmpty(){
   empties.push({
-    e2: Number(document.getElementById('e2').value || 0),
-    h1: Number(document.getElementById('h1').value || 0),
-    epal: Number(document.getElementById('epal').value || 0),
-    kennzeichen: document.getElementById('kennzeichen2').value,
-    spedition: document.getElementById('spedition').value
+    e2: Number(e2.value || 0),
+    h1: Number(h1.value || 0),
+    epal: Number(epal.value || 0),
+    kennzeichen: kennzeichen2.value,
+    spedition: spedition.value
   });
   save();
-  render();
 }
 
 function render(){
 
-  let dt = document.getElementById('deliveryTable');
-  dt.innerHTML = '';
-
+  deliveryTable.innerHTML = "";
   deliveries.forEach(d => {
-    dt.innerHTML += `<tr>
-      <td>${d.nr}</td>
-      <td>${d.anlieferer}</td>
-      <td>${d.kennzeichen}</td>
-      <td>${d.fahrer}</td>
-      <td>${d.lkw}</td>
-    </tr>`;
+    deliveryTable.innerHTML += `
+      <tr>
+        <td>${d.nr}</td>
+        <td>${d.anlieferer}</td>
+        <td>${d.kennzeichen}</td>
+        <td>${d.fahrer}</td>
+        <td>${d.lkw}</td>
+      </tr>`;
   });
 
-  let et = document.getElementById('emptyTable');
-  et.innerHTML = '';
-
-  let sumE2=0,sumH1=0,sumEpal=0;
-
+  emptyTable.innerHTML = "";
   empties.forEach(e => {
-    sumE2 += e.e2;
-    sumH1 += e.h1;
-    sumEpal += e.epal;
-
-    et.innerHTML += `<tr>
-      <td>${e.e2}</td>
-      <td>${e.h1}</td>
-      <td>${e.epal}</td>
-      <td>${e.kennzeichen}</td>
-      <td>${e.spedition}</td>
-    </tr>`;
+    emptyTable.innerHTML += `
+      <tr>
+        <td>${e.e2}</td>
+        <td>${e.h1}</td>
+        <td>${e.epal}</td>
+        <td>${e.kennzeichen}</td>
+        <td>${e.spedition}</td>
+      </tr>`;
   });
-
-  document.getElementById('sumE2').innerText = sumE2;
-  document.getElementById('sumH1').innerText = sumH1;
-  document.getElementById('sumEpal').innerText = sumEpal;
 }
 
 function exportExcel(){
 
-  let exportData = [];
+  let data = [];
 
-  exportData.push({SECTION:"LIEFERUNG"});
-  deliveries.forEach(d => exportData.push(d));
+  data.push({BEREICH:"LIEFERUNGEN"});
+  deliveries.forEach(d => data.push(d));
 
-  exportData.push({});
-  exportData.push({SECTION:"LEERGUT"});
-  empties.forEach(e => exportData.push(e));
+  data.push({});
+  data.push({BEREICH:"LEERGUT"});
+  empties.forEach(e => data.push(e));
 
-  exportData.push({SUMME_E2: empties.reduce((a,b)=>a+b.e2,0), SUMME_H1: empties.reduce((a,b)=>a+b.h1,0), SUMME_EPAL: empties.reduce((a,b)=>a+b.epal,0)});
-
-  let ws = XLSX.utils.json_to_sheet(exportData);
+  let ws = XLSX.utils.json_to_sheet(data);
   let wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Report");
 
-  XLSX.writeFile(wb, "Wareneingang_Report.xlsx");
+  XLSX.writeFile(wb, "Wareneingang.xlsx");
 }
+
+render();
+
 </script>
 
 </body>
